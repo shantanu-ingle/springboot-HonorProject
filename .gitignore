@@ -1,0 +1,30 @@
+# Maven
+target/
+!.mvn/wrapper/maven-wrapper.jar
+.mvn/
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# Spring Boot
+*.log
+
+# Build artifacts
+build/
+dist/
+
+# Other IDEs (optional, keep if others might use)
+.classpath
+.project
+.settings/
+.springBeans
+.sts4-cache/
+.nb-gradle/
+nbproject/
+.vscode/
+
+# macOS
+.DS_Store

@@ -2,8 +2,12 @@ pipeline {
     agent {
         docker {
             image 'maven:3.9.6-eclipse-temurin-21'
-            args '--user root -v /mnt/c/Users/OMEN/.m2:/root/.m2 -v /mnt/c/ProgramData/Jenkins/.jenkins/workspace/springboot-pipeline:/workspace -w /workspace'
+            args '--user root -v /mnt/c/Users/OMEN/.m2:/root/.m2 -v /mnt/c/ProgramData/Jenkins/.jenkins/workspace/springboot-pipeline:/workspace'
+            alwaysPull true
         }
+    }
+    environment {
+        HOME = '/workspace'
     }
     stages {
         stage('Checkout') {

@@ -8,7 +8,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/shantanu-ingle/springboot-HonorProject.git', credentialsId: 'git-credentials'
+                checkout scm
             }
         }
         stage('Build') {

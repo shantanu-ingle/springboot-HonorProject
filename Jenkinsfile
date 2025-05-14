@@ -10,21 +10,17 @@ pipeline {
 
         stage('Build') {
             steps {
-                script {
-                    docker.image('maven:3.9.6-eclipse-temurin-21').inside('-v $WORKSPACE:/workspace -w /workspace') {
-                        sh 'mvn clean package'
-                    }
-                }
+                bat """
+                docker run -v %WORKSPACE%:/workspace maven:3.9.6-eclipse-temurin-21 /bin/sh -c "cd /workspace && mvn clean package"
+                """
             }
         }
 
         stage('Test') {
             steps {
-                script {
-                    docker.image('maven:3.9.6-eclipse-temurin-21').inside('-v $WORKSPACE:/workspace -w /workspace') {
-                        sh 'mvn test'
-                    }
-                }
+                bat """
+                docker run -v %WORKSPACE%:/workspace maven:3.9.6-eclipse-temurin-21 /bin/sh -c "cd /workspace && mvn test"
+                """
             }
         }
 
@@ -35,9 +31,9 @@ pipeline {
                     keyFileVariable: 'SSH_KEY',
                     usernameVariable: 'SSH_USER'
                 )]) {
-                    sh """
-                    scp -i $SSH_KEY target/*.jar $SSH_USER@44.203.66.17:/home/$SSH_USER/
-                    ssh -i $SSH_KEY $SSH_USER@44.203.66.17 "nohup java -jar /home/$SSH_USER/HonorsProject-0.0.1-SNAPSHOT.jar &"
+                    bat """
+                    scp -i %SSH_KEY% target\\*.jar %SSH_USER%@44.203.66.17:/home/%SSH_USER%/
+                    ssh -i %SSH_KEY% %SSH_USER%@44.203.66.17 "nohup java -jar /home/%SSH_USER%/HonorsProject-0.0.1-SNAPSHOT.jar &"
                     """
                 }
             }

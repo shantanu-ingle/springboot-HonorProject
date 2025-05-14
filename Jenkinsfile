@@ -4,20 +4,28 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                cleanWs() // Clean the workspace before starting
-                checkout scm // Checkout code from your SCM (e.g., Git)
+                cleanWs()
+                checkout scm
             }
         }
 
         stage('Build') {
             steps {
-                bat 'mvn clean package' // Compile and package the app
+                script {
+                    docker.image('maven:3.8.4-openjdk-11').inside {
+                        sh 'mvn clean package'
+                    }
+                }
             }
         }
 
         stage('Test') {
             steps {
-                bat 'mvn test' // Run unit tests
+                script {
+                    docker.image('maven:3.8.4-openjdk-11').inside {
+                        sh 'mvn test'
+                    }
+                }
             }
         }
 
@@ -26,12 +34,13 @@ pipeline {
                 sshPublisher(
                     publishers: [
                         sshPublisherDesc(
-                            configName: 'AWS_EC2', // Name of your SSH server config in Jenkins
+                            configName: 'my-ec2-server',
                             transfers: [
                                 sshTransfer(
-                                    sourceFiles: 'target/*.jar', // Files to transfer
-                                    remoteDirectory: '/home/ec2-user/app', // Destination on EC2
-                                    execCommand: 'pkill -f "java -jar" || true; nohup java -jar /home/ec2-user/app/*.jar &' // Restart app
+                                    sourceFiles: 'target/your-app.jar',
+                                    removePrefix: 'target/',
+                                    remoteDirectory: '/home/ec2-user',
+                                    execCommand: 'pkill -f your-app.jar || true; nohup java -jar /home/ec2-user/your-app.jar &'
                                 )
                             ]
                         )
@@ -43,8 +52,8 @@ pipeline {
 
     post {
         always {
-            archiveArtifacts 'target/*.jar' // Archive the JAR file
-            junit 'target/surefire-reports/*.xml' // Publish test results
+            archiveArtifacts 'target/*.jar'
+            junit 'target/surefire-reports/*.xml'
         }
     }
 }

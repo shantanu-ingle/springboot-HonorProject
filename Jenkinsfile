@@ -31,21 +31,12 @@ pipeline {
 
         stage('Deploy') {
             steps {
-                sshPublisher(
-                    publishers: [
-                        sshPublisherDesc(
-                            configName: 'my-ec2-server',
-                            transfers: [
-                                sshTransfer(
-                                    sourceFiles: 'target/your-app.jar',
-                                    removePrefix: 'target/',
-                                    remoteDirectory: '/home/ec2-user',
-                                    execCommand: 'pkill -f your-app.jar || true; nohup java -jar /home/ec2-user/your-app.jar &'
-                                )
-                            ]
-                        )
-                    ]
-                )
+                withCredentials([sshUserPrivateKey(credentialsId: 'ec2-ssh-key', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')]) {
+                    bat """
+                    scp -i %SSH_KEY% target\\*.jar %SSH_USER%@http://44.203.66.17/:/home/%SSH_USER%/
+                    ssh -i %SSH_KEY% %SSH_USER%@http://44.203.66.17/ "pkill -f 'java -jar' || true; nohup java -jar /home/%SSH_USER%/*.jar &"
+                    """
+                }
             }
         }
     }

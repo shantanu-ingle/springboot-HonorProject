@@ -1,48 +1,34 @@
 pipeline {
-    agent none
+    agent any
 
     stages {
         stage('Checkout') {
-            agent {
-                docker {
-                    image 'maven:3.9.6-eclipse-temurin-21'
-                    args '--user root -v C:/Users/OMEN/.m2:/root/.m2 -v $WORKSPACE:/workspace -w /workspace'
-                    alwaysPull true
-                }
-            }
             steps {
                 checkout scm
             }
         }
 
         stage('Build') {
-            agent {
-                docker {
-                    image 'maven:3.9.6-eclipse-temurin-21'
-                    args '--user root -v C:/Users/OMEN/.m2:/root/.m2 -v $WORKSPACE:/workspace -w /workspace'
-                    alwaysPull true
-                }
-            }
             steps {
-                sh 'mvn clean package'
+                script {
+                    docker.image('maven:3.9.6-eclipse-temurin-21').inside('-v $WORKSPACE:/workspace -w /workspace') {
+                        sh 'mvn clean package'
+                    }
+                }
             }
         }
 
         stage('Test') {
-            agent {
-                docker {
-                    image 'maven:3.9.6-eclipse-temurin-21'
-                    args '--user root -v C:/Users/OMEN/.m2:/root/.m2 -v $WORKSPACE:/workspace -w /workspace'
-                    alwaysPull true
-                }
-            }
             steps {
-                sh 'mvn test'
+                script {
+                    docker.image('maven:3.9.6-eclipse-temurin-21').inside('-v $WORKSPACE:/workspace -w /workspace') {
+                        sh 'mvn test'
+                    }
+                }
             }
         }
 
         stage('Deploy') {
-            agent any
             steps {
                 withCredentials([sshUserPrivateKey(
                     credentialsId: 'ec2-ssh-key',
@@ -60,10 +46,8 @@ pipeline {
 
     post {
         always {
-            node('') {
-                archiveArtifacts artifacts: 'target/*.jar', allowEmptyArchive: true
-                junit 'target/surefire-reports/*.xml'
-            }
+            archiveArtifacts artifacts: 'target/*.jar', allowEmptyArchive: true
+            junit 'target/surefire-reports/*.xml'
         }
     }
 }

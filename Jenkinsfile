@@ -11,8 +11,8 @@ pipeline {
         stage('Build') {
             steps {
                 script {
-                    docker.image('maven:3.9.6-eclipse-temurin-21').inside('-v $WORKSPACE:/workspace') {
-                        sh 'cd /workspace && mvn clean package'
+                    docker.image('maven:3.9.6-eclipse-temurin-21').inside('-v /c/ProgramData/Jenkins/.jenkins/workspace:/workspace -w /workspace/springboot-pipeline') {
+                        sh 'mvn clean package'
                     }
                 }
             }
@@ -21,8 +21,8 @@ pipeline {
         stage('Test') {
             steps {
                 script {
-                    docker.image('maven:3.9.6-eclipse-temurin-21').inside('-v $WORKSPACE:/workspace') {
-                        sh 'cd /workspace && mvn test'
+                    docker.image('maven:3.9.6-eclipse-temurin-21').inside('-v /c/ProgramData/Jenkins/.jenkins/workspace:/workspace -w /workspace/springboot-pipeline') {
+                        sh 'mvn test'
                     }
                 }
             }
@@ -35,10 +35,10 @@ pipeline {
                     keyFileVariable: 'SSH_KEY',
                     usernameVariable: 'SSH_USER'
                 )]) {
-                    bat """
-                    scp -i %SSH_KEY% target\\*.jar %SSH_USER%@44.203.66.17:/home/%SSH_USER%/
-                    ssh -i %SSH_KEY% %SSH_USER%@44.203.66.17 "nohup java -jar /home/%SSH_USER%/HonorsProject-0.0.1-SNAPSHOT.jar &"
-                    """
+                    sh '''
+                    scp -i $SSH_KEY target/*.jar $SSH_USER@44.203.66.17:/home/$SSH_USER/
+                    ssh -i $SSH_KEY $SSH_USER@44.203.66.17 "nohup java -jar /home/$SSH_USER/HonorsProject-0.0.1-SNAPSHOT.jar &"
+                    '''
                 }
             }
         }

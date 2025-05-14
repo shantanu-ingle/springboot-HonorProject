@@ -11,22 +11,17 @@ pipeline {
 
         stage('Build') {
             steps {
-                script {
-                    // Get the current user's UID and GID on Windows host
-                    bat '''
-                    docker run --rm -v %WORKSPACE%:/workspace maven:3.9.9-eclipse-temurin-21 /bin/sh -c "chown -R $(id -u):$(id -g) /workspace && cd /workspace && mvn clean package"
-                    '''
-                }
+                bat """
+                docker run --user 0:0 -v %WORKSPACE%:/workspace maven:3.9.9-eclipse-temurin-21 /bin/sh -c "cd /workspace && mvn clean package"
+                """
             }
         }
 
         stage('Test') {
             steps {
-                script {
-                    bat '''
-                    docker run --rm -v %WORKSPACE%:/workspace maven:3.9.9-eclipse-temurin-21 /bin/sh -c "chown -R $(id -u):$(id -g) /workspace && cd /workspace && mvn test"
-                    '''
-                }
+                bat """
+                docker run --user 0:0 -v %WORKSPACE%:/workspace maven:3.9.9-eclipse-temurin-21 /bin/sh -c "cd /workspace && mvn test"
+                """
             }
         }
 

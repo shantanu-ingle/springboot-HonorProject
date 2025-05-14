@@ -5,7 +5,7 @@ pipeline {
             agent {
                 docker {
                     image 'maven:3.9.6-eclipse-temurin-21'
-                    args '--user root -v /mnt/c/Users/OMEN/.m2:/root/.m2'
+                    args '--user root -v /mnt/c/Users/OMEN/.m2:/root/.m2 -w /workspace'
                     alwaysPull true
                 }
             }
@@ -17,7 +17,7 @@ pipeline {
             agent {
                 docker {
                     image 'maven:3.9.6-eclipse-temurin-21'
-                    args '--user root -v /mnt/c/Users/OMEN/.m2:/root/.m2'
+                    args '--user root -v /mnt/c/Users/OMEN/.m2:/root/.m2 -w /workspace'
                     alwaysPull true
                 }
             }
@@ -29,7 +29,7 @@ pipeline {
             agent {
                 docker {
                     image 'maven:3.9.6-eclipse-temurin-21'
-                    args '--user root -v /mnt/c/Users/OMEN/.m2:/root/.m2'
+                    args '--user root -v /mnt/c/Users/OMEN/.m2:/root/.m2 -w /workspace'
                     alwaysPull true
                 }
             }
@@ -51,8 +51,10 @@ pipeline {
     }
     post {
         always {
-            archiveArtifacts artifacts: 'target/*.jar', allowEmptyArchive: true
-            junit 'target/surefire-reports/*.xml'
+            node('') {
+                archiveArtifacts artifacts: 'target/*.jar', allowEmptyArchive: true
+                junit 'target/surefire-reports/*.xml'
+            }
         }
     }
 }

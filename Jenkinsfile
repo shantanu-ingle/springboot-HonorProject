@@ -12,7 +12,7 @@ pipeline {
         stage('Build') {
             steps {
                 bat """
-                docker run -v %WORKSPACE%:/workspace maven:3.9.9-eclipse-temurin-21 /bin/sh -c "cd /workspace && mvn clean package"
+                docker run -v %WORKSPACE%:/workspace maven:3.9.9-eclipse-temurin-21 /bin/sh -c "chmod -R 777 /workspace && cd /workspace && mvn clean package"
                 """
             }
         }
@@ -20,7 +20,7 @@ pipeline {
         stage('Test') {
             steps {
                 bat """
-                docker run -v %WORKSPACE%:/workspace maven:3.9.9-eclipse-temurin-21 /bin/sh -c "cd /workspace && mvn test"
+                docker run -v %WORKSPACE%:/workspace maven:3.9.9-eclipse-temurin-21 /bin/sh -c "chmod -R 777 /workspace && cd /workspace && mvn test"
                 """
             }
         }

@@ -5,13 +5,13 @@ pipeline {
         stage('Checkout') {
             steps {
                 cleanWs() // Clean the workspace
-                checkout scm // Checkout the source code
+                checkout scm // Checkout source code
             }
         }
 
         stage('Build') {
             steps {
-                bat 'mvn clean package' // Run Maven directly on Windows
+                bat 'mvn clean package' // Build the project
             }
         }
 
@@ -23,16 +23,8 @@ pipeline {
 
         stage('Deploy') {
             steps {
-                withCredentials([sshUserPrivateKey(
-                    credentialsId: 'ec2-ssh-key',
-                    keyFileVariable: 'SSH_KEY',
-                    usernameVariable: 'SSH_USER'
-                )]) {
-                    bat """
-                    scp -i %SSH_KEY% target\\*.jar %SSH_USER%@44.203.66.17:/home/%SSH_USER%/
-                    ssh -i %SSH_KEY% %SSH_USER%@44.203.66.17 "nohup java -jar /home/%SSH_USER%/HonorsProject-0.0.1-SNAPSHOT.jar &"
-                    """
-                }
+                // Your deployment steps
+                echo 'Deploying...'
             }
         }
     }

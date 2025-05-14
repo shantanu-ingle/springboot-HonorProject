@@ -11,8 +11,8 @@ pipeline {
         stage('Build') {
             steps {
                 script {
-                    docker.image('maven:3.9.6-eclipse-temurin-21').inside('-v $WORKSPACE:/workspace -w /workspace') {
-                        sh 'mvn clean package'
+                    docker.image('maven:3.9.6-eclipse-temurin-21').inside('-v $WORKSPACE:/workspace') {
+                        sh 'cd /workspace && mvn clean package'
                     }
                 }
             }
@@ -21,8 +21,8 @@ pipeline {
         stage('Test') {
             steps {
                 script {
-                    docker.image('maven:3.9.6-eclipse-temurin-21').inside('-v $WORKSPACE:/workspace -w /workspace') {
-                        sh 'mvn test'
+                    docker.image('maven:3.9.6-eclipse-temurin-21').inside('-v $WORKSPACE:/workspace') {
+                        sh 'cd /workspace && mvn test'
                     }
                 }
             }

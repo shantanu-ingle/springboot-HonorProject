@@ -6,17 +6,11 @@ pipeline {
             agent {
                 docker {
                     image 'maven:3.9.6-eclipse-temurin-21'
-                    args """
-                      --user root \
-                      -v C:/Users/OMEN/.m2:/root/.m2 \
-                      -v ${env.WORKSPACE.replaceAll('\\\\','/')}:${'/workspace'} \
-                      -w /workspace
-                    """
+                    args '--user root -v C:/Users/OMEN/.m2:/root/.m2 -v $WORKSPACE:/workspace -w /workspace'
                     alwaysPull true
                 }
             }
             steps {
-                // this will now check out into /workspace inside the container
                 checkout scm
             }
         }
@@ -25,12 +19,7 @@ pipeline {
             agent {
                 docker {
                     image 'maven:3.9.6-eclipse-temurin-21'
-                    args """
-                      --user root \
-                      -v C:/Users/OMEN/.m2:/root/.m2 \
-                      -v ${env.WORKSPACE.replaceAll('\\\\','/')}:${'/workspace'} \
-                      -w /workspace
-                    """
+                    args '--user root -v C:/Users/OMEN/.m2:/root/.m2 -v $WORKSPACE:/workspace -w /workspace'
                     alwaysPull true
                 }
             }
@@ -43,12 +32,7 @@ pipeline {
             agent {
                 docker {
                     image 'maven:3.9.6-eclipse-temurin-21'
-                    args """
-                      --user root \
-                      -v C:/Users/OMEN/.m2:/root/.m2 \
-                      -v ${env.WORKSPACE.replaceAll('\\\\','/')}:${'/workspace'} \
-                      -w /workspace
-                    """
+                    args '--user root -v C:/Users/OMEN/.m2:/root/.m2 -v $WORKSPACE:/workspace -w /workspace'
                     alwaysPull true
                 }
             }
@@ -60,10 +44,14 @@ pipeline {
         stage('Deploy') {
             agent any
             steps {
-                withCredentials([sshUserPrivateKey(credentialsId: 'ec2-ssh-key', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')]) {
+                withCredentials([sshUserPrivateKey(
+                    credentialsId: 'ec2-ssh-key',
+                    keyFileVariable: 'SSH_KEY',
+                    usernameVariable: 'SSH_USER'
+                )]) {
                     bat """
-                    scp -i %SSH_KEY% target\\HonorsProject-0.0.1-SNAPSHOT.jar %SSH_USER%@44.203.66.17:/home/%SSH_USER/
-                    ssh -i %SSH_KEY% %SSH_USER%@44.203.66.17 "nohup java -jar /home/%SSH_USER/HonorsProject-0.0.1-SNAPSHOT.jar &"
+                    scp -i %SSH_KEY% target\\*.jar %SSH_USER%@44.203.66.17:/home/%SSH_USER%/
+                    ssh -i %SSH_KEY% %SSH_USER%@44.203.66.17 "nohup java -jar /home/%SSH_USER%/HonorsProject-0.0.1-SNAPSHOT.jar &"
                     """
                 }
             }
@@ -72,8 +60,10 @@ pipeline {
 
     post {
         always {
-            archiveArtifacts artifacts: 'target/*.jar', allowEmptyArchive: true
-            junit 'target/surefire-reports/*.xml'
+            node('') {
+                archiveArtifacts artifacts: 'target/*.jar', allowEmptyArchive: true
+                junit 'target/surefire-reports/*.xml'
+            }
         }
     }
 }

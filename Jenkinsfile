@@ -4,7 +4,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                // Wipe the workspace to ensure no leftover files cause issues
+                // Wipe the workspace to ensure a clean state
                 cleanWs()
                 checkout scm
             }
@@ -13,7 +13,7 @@ pipeline {
         stage('Build') {
             steps {
                 bat """
-                docker run -v %WORKSPACE%:/workspace maven:3.9.6-eclipse-temurin-21 /bin/sh -c "cd /workspace && mvn clean package"
+                docker run -v %WORKSPACE%:/workspace maven:3.9.6-eclipse-temurin-21 /bin/sh -c "chmod -R 777 /workspace && cd /workspace && mvn clean package"
                 """
             }
         }
@@ -21,7 +21,7 @@ pipeline {
         stage('Test') {
             steps {
                 bat """
-                docker run -v %WORKSPACE%:/workspace maven:3.9.6-eclipse-temurin-21 /bin/sh -c "cd /workspace && mvn test"
+                docker run -v %WORKSPACE%:/workspace maven:3.9.6-eclipse-temurin-21 /bin/sh -c "chmod -R 777 /workspace && cd /workspace && mvn test"
                 """
             }
         }

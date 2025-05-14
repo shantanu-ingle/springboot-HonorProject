@@ -4,6 +4,8 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
+                // Wipe the workspace to ensure no leftover files cause issues
+                cleanWs()
                 checkout scm
             }
         }

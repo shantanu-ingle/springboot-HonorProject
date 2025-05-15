@@ -12,7 +12,7 @@ pipeline {
         stage('Build') {
             steps {
                 bat """
-                docker run -v \"%WORKSPACE%\":/workspace maven:3.9.9-eclipse-temurin-21 /bin/sh -c \"cd /workspace && mvn clean package\"
+                docker run -v "%CD%":/workspace maven:3.9.9-eclipse-temurin-21 /bin/sh -c "cd /workspace && mvn clean package"
                 """
             }
         }
@@ -20,7 +20,7 @@ pipeline {
         stage('Test') {
             steps {
                 bat """
-                docker run -v \"%WORKSPACE%\":/workspace maven:3.9.9-eclipse-temurin-21 /bin/sh -c \"cd /workspace && mvn test\"
+                docker run -v "%CD%":/workspace maven:3.9.9-eclipse-temurin-21 /bin/sh -c "cd /workspace && mvn test"
                 """
             }
         }
@@ -29,8 +29,18 @@ pipeline {
             steps {
                 withCredentials([sshUserPrivateKey(credentialsId: 'ec2-ssh-key', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')]) {
                     bat """
-                    C:\\Windows\\System32\\OpenSSH\\scp.exe -i %SSH_KEY% target\\HonorsProject-0.0.1-SNAPSHOT.jar %SSH_USER%@54.159.204.82:/home/%SSH_USER%/
-                    C:\\Windows\\System32\\OpenSSH\\ssh.exe -i %SSH_KEY% %SSH_USER%@54.159.204.82 \"pkill -f 'java -jar' || true; nohup java -jar /home/%SSH_USER%/HonorsProject-0.0.1-SNAPSHOT.jar &\"
+                    echo Starting deployment at %DATE% %TIME%
+                    echo Testing SSH connection...
+                    C:\\Windows\\System32\\OpenSSH\\ssh.exe -o ConnectTimeout=30 -o StrictHostKeyChecking=no -i "%SSH_KEY%" %SSH_USER%@54.159.204.82 "echo Connected" || (echo SSH connection failed && exit /b 1)
+                    echo SSH connection established at %DATE% %TIME%
+
+                    echo Copying JAR file...
+                    C:\\Windows\\System32\\OpenSSH\\scp.exe -o ConnectTimeout=30 -o StrictHostKeyChecking=no -i "%SSH_KEY%" target\\HonorsProject-0.0.1-SNAPSHOT.jar %SSH_USER%@54.159.204.82:/home/%SSH_USER%/
+                    echo JAR file copied at %DATE% %TIME%
+
+                    echo Deploying application...
+                    C:\\Windows\\System32\\OpenSSH\\ssh.exe -o ConnectTimeout=30 -o StrictHostKeyChecking=no -i "%SSH_KEY%" %SSH_USER%@54.159.204.82 "pkill -f 'java -jar' || true; nohup java -jar /home/%SSH_USER%/HonorsProject-0.0.1-SNAPSHOT.jar &"
+                    echo Deployment finished at %DATE% %TIME%
                     """
                 }
             }

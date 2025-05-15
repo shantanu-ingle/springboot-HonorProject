@@ -11,16 +11,16 @@ pipeline {
 
         stage('Build') {
             steps {
-                sh """
-                docker run -v \$(pwd):/workspace maven:3.9.9-eclipse-temurin-21 /bin/sh -c "cd /workspace && mvn clean package"
+                bat """
+                docker run -v \"%WORKSPACE%\":/workspace maven:3.9.9-eclipse-temurin-21 /bin/sh -c \"cd /workspace && mvn clean package\"
                 """
             }
         }
 
         stage('Test') {
             steps {
-                sh """
-                docker run -v \$(pwd):/workspace maven:3.9.9-eclipse-temurin-21 /bin/sh -c "cd /workspace && mvn test"
+                bat """
+                docker run -v \"%WORKSPACE%\":/workspace maven:3.9.9-eclipse-temurin-21 /bin/sh -c \"cd /workspace && mvn test\"
                 """
             }
         }
@@ -28,9 +28,9 @@ pipeline {
         stage('Deploy') {
             steps {
                 withCredentials([sshUserPrivateKey(credentialsId: 'ec2-ssh-key', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER')]) {
-                    sh """
-                    scp -i \$SSH_KEY target/HonorsProject-0.0.1-SNAPSHOT.jar \$SSH_USER@54.159.204.82:/home/\$SSH_USER/
-                    ssh -i \$SSH_KEY \$SSH_USER@54.159.204.82 "pkill -f 'java -jar' || true; nohup java -jar /home/\$SSH_USER/HonorsProject-0.0.1-SNAPSHOT.jar &"
+                    bat """
+                    C:\\Windows\\System32\\OpenSSH\\scp.exe -i %SSH_KEY% target\\HonorsProject-0.0.1-SNAPSHOT.jar %SSH_USER%@54.159.204.82:/home/%SSH_USER%/
+                    C:\\Windows\\System32\\OpenSSH\\ssh.exe -i %SSH_KEY% %SSH_USER%@54.159.204.82 \"pkill -f 'java -jar' || true; nohup java -jar /home/%SSH_USER%/HonorsProject-0.0.1-SNAPSHOT.jar &\"
                     """
                 }
             }

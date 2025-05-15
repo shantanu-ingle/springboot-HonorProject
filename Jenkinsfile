@@ -51,7 +51,8 @@ pipeline {
                                 # Decompress the JAR
                                 gunzip -f /home/\$SSH_USER/HonorsProject-0.0.1-SNAPSHOT.jar.gz
 
-                                # Start the new instance (skip pkill since app might not be running)
+                                # Stop any running instance and start the new one
+                                pkill -f 'java -jar' || true
                                 nohup java -jar /home/\$SSH_USER/HonorsProject-0.0.1-SNAPSHOT.jar &
                             EOF
                             echo "File transfer and deployment finished at \$(date)"

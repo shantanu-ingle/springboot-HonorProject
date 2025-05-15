@@ -43,7 +43,7 @@ pipeline {
                     echo JAR file copied at %DATE% && time /t
 
                     echo Deploying application...
-                    C:\\Windows\\System32\\OpenSSH\\ssh.exe -o ConnectTimeout=30 -o StrictHostKeyChecking=no -i "%SSH_KEY%" %SSH_USER%@54.159.204.82 "pkill -f 'java -jar' || true; nohup java -jar /home/%SSH_USER%/HonorsProject-0.0.1-SNAPSHOT.jar &"
+                    C:\\Windows\\System32\\OpenSSH\\ssh.exe -o ConnectTimeout=30 -o StrictHostKeyChecking=no -i "%SSH_KEY%" %SSH_USER%@54.159.204.82 "pkill -f 'java -jar' || true; sleep 2; nohup java -jar /home/%SSH_USER%/HonorsProject-0.0.1-SNAPSHOT.jar & sleep 10; curl http://localhost:8081/hello"
                     echo Deployment finished at %DATE% && time /t
                     """
                 }
@@ -54,15 +54,10 @@ pipeline {
             steps {
                 script {
                     echo "Verifying application is running at %DATE% && time /t"
-                    // Add a retry loop with delay
                     retry(3) {
                         script {
-                            // Delay to allow the app to start
                             bat """
                             ping 127.0.0.1 -n 6 > nul
-                            """
-                            // Verify the endpoint
-                            bat """
                             powershell -Command "Invoke-WebRequest -Uri http://54.159.204.82:8081/hello -Method GET -UseBasicParsing -TimeoutSec 30 | Select-Object -ExpandProperty Content"
                             """
                         }

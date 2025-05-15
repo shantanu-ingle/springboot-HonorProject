@@ -43,12 +43,23 @@ pipeline {
 
                     echo Deploying application...
                     C:\\Windows\\System32\\OpenSSH\\ssh.exe -o ConnectTimeout=30 -o StrictHostKeyChecking=no -i "%SSH_KEY%" %SSH_USER%@54.159.204.82 "
+                        echo Stopping any running Java processes...
                         pkill -f 'java -jar' || true;
                         sleep 5;
+
+                        echo Starting the application...
                         nohup java -jar /home/%SSH_USER%/HonorsProject-0.0.1-SNAPSHOT.jar > /home/%SSH_USER%/app.log 2>&1 &
-                        disown;
-                        sleep 15;
-                        curl -f http://localhost:8081/hello || (echo App failed to start && exit 1)
+                        pid=$!;
+
+                        echo Waiting for the application to start...
+                        sleep 30;
+
+                        echo Checking if the application is running...
+                        for i in {1..5}; do
+                            curl -f http://localhost:8081/hello && break || sleep 5;
+                        done || (echo App failed to start && tail /home/%SSH_USER%/app.log && exit 1);
+
+                        echo Application started successfully.
                     "
                     echo Deployment finished at %DATE% && time /t
                     """

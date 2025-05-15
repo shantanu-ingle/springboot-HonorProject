@@ -54,10 +54,19 @@ pipeline {
             steps {
                 script {
                     echo "Verifying application is running at %DATE% && time /t"
-                    // Use PowerShell to perform a curl-like request (Windows doesn't have curl by default)
-                    bat """
-                    powershell -Command "Invoke-WebRequest -Uri http://54.159.204.82:8081/hello -Method GET -UseBasicParsing | Select-Object -ExpandProperty Content"
-                    """
+                    // Add a retry loop with delay
+                    retry(3) {
+                        script {
+                            // Delay to allow the app to start
+                            bat """
+                            ping 127.0.0.1 -n 6 > nul
+                            """
+                            // Verify the endpoint
+                            bat """
+                            powershell -Command "Invoke-WebRequest -Uri http://54.159.204.82:8081/hello -Method GET -UseBasicParsing -TimeoutSec 30 | Select-Object -ExpandProperty Content"
+                            """
+                        }
+                    }
                     echo "Application verified at %DATE% && time /t"
                 }
             }

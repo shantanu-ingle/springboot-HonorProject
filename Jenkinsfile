@@ -34,16 +34,15 @@ pipeline {
                     icacls "%SSH_KEY%" /grant:r "%USERNAME%:F"
 
                     echo Starting deployment at %DATE% && time /t
+
                     echo Testing SSH connection...
                     C:\\Windows\\System32\\OpenSSH\\ssh.exe -o ConnectTimeout=30 -o StrictHostKeyChecking=no -i "%SSH_KEY%" %SSH_USER%@54.159.204.82 "echo Connected" || (echo SSH connection failed && exit /b 1)
-                    echo SSH connection established at %DATE% && time /t
 
                     echo Copying JAR file...
                     C:\\Windows\\System32\\OpenSSH\\scp.exe -o ConnectTimeout=30 -o StrictHostKeyChecking=no -i "%SSH_KEY%" target\\HonorsProject-0.0.1-SNAPSHOT.jar %SSH_USER%@54.159.204.82:/home/%SSH_USER%/
-                    echo JAR file copied at %DATE% && time /t
 
                     echo Deploying application...
-                    C:\\Windows\\System32\\OpenSSH\\ssh.exe -o ConnectTimeout=30 -o StrictHostKeyChecking=no -i "%SSH_KEY%" %SSH_USER%@54.159.204.82 "pkill -f 'java -jar' || true; sleep 2; nohup java -jar /home/%SSH_USER%/HonorsProject-0.0.1-SNAPSHOT.jar & sleep 10; curl http://localhost:8081/hello"
+                    C:\\Windows\\System32\\OpenSSH\\ssh.exe -o ConnectTimeout=30 -o StrictHostKeyChecking=no -i "%SSH_KEY%" %SSH_USER%@54.159.204.82 "pkill -f 'java -jar' || true; sleep 5; nohup java -jar /home/%SSH_USER%/HonorsProject-0.0.1-SNAPSHOT.jar > /home/%SSH_USER%/app.log 2>&1 & sleep 15; curl -f http://localhost:8081/hello || (echo App failed to start && exit 1)"
                     echo Deployment finished at %DATE% && time /t
                     """
                 }
